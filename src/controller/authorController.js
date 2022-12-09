@@ -1,6 +1,7 @@
 const authorModel = require("../models/authorModel")
-const validation = require('../validate/validation')
 const jwt = require("jsonwebtoken")
+const { isValidName, isValidEmail, isValidPassword, forName }=require("../validate/validation")
+
 
 
 //---------------------------------------------------- Sign Up author ----------------------------------------------
@@ -14,25 +15,29 @@ const createAuthors = async function(req, res){
             res.status(400).send({status:false, msg:"can not create author with empty body"})
         }
         const{fname, lname, title, email, password}= req.body
-        if(!(fname&&lname&&title&&email&&password)){
-       return res.status(400).send({status:false,msg: "this data is required"})}
-       if(!validation.isValidEmail(email))
+
+        if (!fname) { return res.status(400).send({ status: false, message: "fname is mandatory" }) }
+        if (!lname) { return res.status(400).send({ status: false, message: "lname is mandatory" }) }
+        if (!title) { return res.status(400).send({ status: false, message: "title is mandatory" }) }
+        if (!email) { return res.status(400).send({ status: false, message: "email is mandatory" }) }
+        if (!password) { return res.status(400).send({ status: false, message: "password is mandatory" }) }
+
+        if (!isValidName(fname)&& !forName(fname)) return res.status(400).send({ status: false, message: "plz provide fname" })
+        if (!isValidName(lname) && !forName(lname)) return res.status(400).send({ status: false, message: "plz provide lname" })
+
+    if (!["Miss", "Mrs", "Mr"].includes(title)) return res.status(400).send({ status: false, message: "title takes only Mr, Miss, Mrs" })
+
+       if(!isValidEmail(email))
        {
         return res.status(400).send({status:false, msg:"this is not a valid emailId"})
        }
-       if(!validation.isValidPassword(password))
+       if(!isValidPassword(password))
        {return res.status(400).send({status:false, msg:"this is not a valid password"})
        }
 
         const uniqueMail= await authorModel.findOne({email:email})
         if(uniqueMail){
-            return res.status(400).send({status:false, msg:"this email is already exist"})}
-
-    
-
-        if ((title !== "Mr") && (title !== "Mrs") && (title !== "Miss")) {
-            return res.status(400).send({ status: false, msg: "please enter correct title eg Mr,Mrs,Miss" })}
-
+     return res.status(400).send({status:false, msg:"this email is already exist"})}
 
 
         let details= await authorModel.create(store)
@@ -57,16 +62,16 @@ const createAuthors = async function(req, res){
             res.status(400).send({status:false, msg:"both fields are required."})
         }
 
-if(!validation.isValidEmail(email)){
+if(!isValidEmail(email)){
     res.status(400).send({status:false, msg:"invalid email"})}
 
 
-if(!validation.isValidPassword(password)){
+if(!isValidPassword(password)){
     res.status(400).send({status:false, msg:"invalid password"})}
 
 
 let authorDetail=await authorModel.findOne({email:email,password:password})
-console.log(authorDetail._id)
+
 if(!authorDetail){
     res.status(404).send({status:false, msg:"this author is not present at that time "})}
 
@@ -75,7 +80,7 @@ let token=jwt.sign({
   id:authorDetail._id,
   email:authorDetail.email,
   password:authorDetail.password
-},"khul ja sim sim",{ expiresIn: '24h'})
+},"blogging-site",{ expiresIn: '24h'})
 
 res.setHeader("x-api-key", token)
 res.status(200).send({status:true, msg:"using this token stay signed in for 24 hours" ,data:token})}

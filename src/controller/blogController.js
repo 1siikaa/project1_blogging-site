@@ -1,10 +1,7 @@
 const blogModel = require("../models/blogModel");
-const authorModel = require("../models/authorModel");
 const mongoose = require("mongoose");
-const validation = require("../validate/validation");
-const { populate } = require("../models/blogModel");
+const { isValidName}=require("../validate/validation")
 const moment = require("moment");
-const { findById, findOneAndUpdate } = require("../models/authorModel");
 
 
 
@@ -23,18 +20,28 @@ const createBlogs = async function (req, res) {
         .status(400)
         .send({ status: false, msg: "invalid request put valid data in body" });}
 
-    let{body, title, authorId, category, isPublished, publishedAt, deletedAt, isDeleted}= req.body
+    let{body, title, authorId, category, isPublished,isDeleted}= req.body
 
-    if(!(body&&authorId&&title&&category)){
-      return res.status(400).send({status:false,msg: "this data is required"})}
     
+      if (!title) { return res.status(400).send({ status: false, message: "title is mandatory" }) }
+      if (!body) { return res.status(400).send({ status: false, message: "body is mandatory" }) }
+      if (!authorId) { return res.status(400).send({ status: false, message: "authorId is mandatory" }) }
+      if (!category) { return res.status(400).send({ status: false, message: "category is mandatory" }) }
+
+
+          //==============================validation by using Regex=============================================================// 
+
+          if (!isValidName(title)) return res.status(400).send({ status: false, message: "plz provide title" })
+          if (!isValidName(body)) return res.status(400).send({ status: false, message: "Plz provied a valid body" })
+          if (!isValidName(category)) return res.status(400).send({ status: false, message: "category is not valid" })
+          
 
     if (!mongoose.isValidObjectId(authorId)) {
       res.status(400).send({status: false, msg: "invalid author id"})}
-let today
+      let today
       if(isPublished==true){
         today= moment().format('YYYY-MM-DD, hh:mm:ss a')
- data.publishedAt=today
+        data.publishedAt=today
      }
      else if(isPublished==false){
        data.publishedAt= null
@@ -62,23 +69,22 @@ exports.getBlog = async (req, res) => {
   try {
     if (Object.keys(req.query).length == 0) {
       let blog = await blogModel
-        .find({isDeleted:false, isPublished:true})
-        .populate("authorId");
-      res.status(200).send({status:true, msg:"no query", msg: blog });
+        .find({isDeleted:false, isPublished:true});
+     return res.status(200).send({status:true, msg:"no query", data: blog });
       if (blog.length == 0) {
-        res.status(404).send({status:false, msg:"No blogs found"});}}
+        return res.status(404).send({status:false, msg:"No blogs found"});}}
 
     if (Object.keys(req.query).length !== 0) {
       req.query.isDeleted=false
       req.query.isPublished=true
-      let filteredBlogs = await blogModel.find(req.query ).populate("authorId");
+      let filteredBlogs = await blogModel.find(req.query )
       if(filteredBlogs.length==0){
-        res.status(404).send({status:false, msg:"No blogs found with these filter"})}
+        return res.status(404).send({status:false, msg:"No blogs found with these filter"})}
 else{
       return res.status(200).send({status:true, msg:"query",data: filteredBlogs });}}}
 
      catch (error) {
-    res.status(500).send({status:false, Error: error.message });}};
+   return res.status(500).send({status:false, Error: error.message });}};
 
 
 
@@ -97,7 +103,16 @@ const updateDetails = async function (req, res) {
     if(Object.keys(req.body).length==0){
       res.status(400).send({status:false, msg:"body is imprtant to update a document"})
     }
-    let {isDeleted, isPublished, publishedAt, deletedAt, title, tags, category, subcategory, body}= req.body
+    let {isDeleted, isPublished, title, tags, category, subcategory, body}= req.body
+    if(title){
+    if (!isValidName(title)) return res.status(400).send({ status: false, message: "plz provide title" })
+    }
+    if(body){
+    if (!isValidName(body)) return res.status(400).send({ status: false, message: "Plz provied a valid body" })
+    }
+    if(category){
+    if (!isValidName(category)) return res.status(400).send({ status: false, message: "category is not valid" })
+    }
     let today
     if(isPublished==true){
        today= moment().format('YYYY-MM-DD, hh:mm:ss a')
@@ -145,7 +160,7 @@ const deleteData = async function (req, res) {
 {new : true}
     )
     if(Object.keys(details).length!==0){
-    res.status(200).send()}
+   return  res.status(200).send()}
     else{
       res.status(404).send({status:false, msg:'this blog does not exist.'})
     }
@@ -161,28 +176,29 @@ const deleteData = async function (req, res) {
 
 exports.deleteByQuery = async function (req, res) {
   try {
-    const filter =req.query
-    let{title:title, body:body, category:category, subcategory:subcategory,tags:tags, authorId:authorId}= req.query
+   
+    let{title, body, category, subcategory,tags, authorId}= req.query
 
     
       if(Object.keys(req.query).length==0){
         return res.status(400).send({status:false, msg:"enter atleast one query."})}
-       
-      let findDocs= await blogModel.find(filter)
-
-      if(findDocs.length==0){
-        res.status(404).send({status:false, msg: "this blog data is not available"})
+       if(authorId){
+        if(!mongoose.isValidObjectId(authorId))
+        return res.status(400).send({status:false, message:"authorId is not a valid ObjectId"})
+       }
+      let findDocs= await blogModel.find(req.query)
+      if(!findDocs){
+        return res.status(400).send({status:false, message:"BLOG IS NOT AVAILABLE"})
+        
       }
-      else{
+      
       let identity= req.identity
       
 
       let deletedata=[]
       let detail
 for(let i=0; i<findDocs.length; i++){
-  if(findDocs[i].authorId==identity){
-
-             
+  if(findDocs[i].authorId==identity){         
     detail = await blogModel.findOneAndUpdate({authorId:identity,isDelete:false, isPublished:true,$or:[{category:category, subcategory:subcategory, tags:tags, body:body, title:title}]},
       
       { isDeleted: true, deletedAt: new Date() },
@@ -197,10 +213,8 @@ for(let i=0; i<findDocs.length; i++){
      }
      else{
       return res.status(400).send({status:false, msg:"can not delete these blogs. May be they don't exist at your end!!"})
-     }}}
+     }}
 
-   
-    
     catch (err) {
     res.status(500).send({status:false, Error: err.message })}};
 

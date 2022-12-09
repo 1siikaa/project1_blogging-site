@@ -21,16 +21,25 @@ const isValidPassword = (value) =>{
 //-------------------------------------------  NAME VALIDATION  ----------------------------------------------------
 
 
-const isValidName= (value) =>{
-    if (typeof value === "undefined" || value === null) return false
-    const regex = /^[a-z ,.'-]+$/i
-    return regex.test(value)
-}
+const isValidName = function (value) {
+    if (typeof value === undefined || typeof value === null || value === "" ) {
+      return false;
+    }
+    if (typeof value === "string" && value.trim().length > 0 ) {
+      return true;
+    }
+    
+  }
+  
 
+  const forName = function (value) {
+    return /^[A-Z][a-z]{1,}(?: [A-Z][a-z]+){0,}$/.test(value);
+  };
 
 
 
 module.exports.isValidEmail = isValidEmail
 module.exports.isValidPassword= isValidPassword
 module.exports.isValidName= isValidName
+module.exports.forName=forName
 

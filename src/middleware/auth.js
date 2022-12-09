@@ -8,16 +8,19 @@ const blogModel = require("../models/blogModel")
 const authenticate = async (req,res,next) => {
    try {
     const checkToken = req.headers["x-api-key"]
-    let verifyToken 
-        if(!checkToken) return res.status(400).send({status:false, msg:"token must be present inside the header"})
-try{
-    verifyToken = await jwt.verify(checkToken, "khul ja sim sim")}
+    
+        if(!checkToken)
+         return res.status(400).send({status:false, msg:"token must be present inside the header"})
 
-   catch(err){ 
-        res.status(401).send({status: false,msg:"Authentication is missing",msg2:err.message})}
-req.identity= verifyToken.id
-
-    next()}
+    jwt.verify(checkToken, "blogging-site", function (err, decodedToken){
+if(err){
+    return res.status(401).send({status:false, message:err.message})
+    }
+    else{
+        req.identity=decodedToken.id
+        next()
+    }
+})}
 
 catch(err){
     res.status(500).send({status:false, Error: err.message})}}
