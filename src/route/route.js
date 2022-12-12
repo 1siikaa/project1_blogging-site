@@ -7,24 +7,28 @@ const middleware = require("../middleware/auth")
 //............................................... Post Api .........................................................................................
 
 router.post('/authors', authorController.createAuthors)
-router.post('/blogs',middleware.authenticate,blogController.createBlogs)
+router.post('/blogs',middleware.authentication,blogController.createBlogs)
 
 //............................................... Get Api ...........................................................................................
 
-router.get('/blogs',middleware.authenticate, blogController.getBlog)
+router.get('/blogs',middleware.authentication, blogController.fetchBlogs)
 
 //............................................... Put Api ..........................................................................................
 
-router.put('/blogs/:blogId', middleware.authenticate,middleware.authorisation,blogController.updateDetails)
+router.put('/blogs/:blogId', middleware.authentication,middleware.authorisation,blogController.updateBlog)
 
 //............................................... Delete Api .......................................................................................
 
-router.delete('/blogs/:blogId',middleware.authenticate,middleware.authorisation,blogController.deleteData)
-router.delete('/blogs',middleware.authenticate,blogController.deleteByQuery)
+router.delete('/blogs/:blogId',middleware.authentication,middleware.authorisation,blogController.deleteDocument)
+router.delete('/blogs',middleware.authentication,blogController.deleteDocByQuery)
 
 //............................................... Post Api for Log In ..............................................................................
 
 router.post('/login',authorController.authorLogin)
 
+//.............................................. Path not found .....................................................................................
+router.all("/*", async function(req,res){
+    return res.status(404).send({status:false, message:"Page Not Found."})
+})
 
 module.exports = router

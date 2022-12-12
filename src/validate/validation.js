@@ -18,7 +18,7 @@ const isValidPassword = (value) =>{
     return regex.test(value)
 }
 
-//-------------------------------------------  NAME VALIDATION  ----------------------------------------------------
+//-------------------------------------------  NAME TYPE VALIDATION  ----------------------------------------------------
 
 
 const isValidName = function (value) {
@@ -27,11 +27,11 @@ const isValidName = function (value) {
     }
     if (typeof value === "string" && value.trim().length > 0 ) {
       return true;
-    }
-    
-  }
-  
+    }}
 
+
+//-------------------------------------------  NAME  VALIDATION  ----------------------------------------------------
+  
   const forName = function (value) {
     return /^[A-Z][a-z]{1,}(?: [A-Z][a-z]+){0,}$/.test(value);
   };

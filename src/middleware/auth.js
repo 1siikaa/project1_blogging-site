@@ -5,14 +5,16 @@ const blogModel = require("../models/blogModel")
 //-------------------------------------------  Authentication  ----------------------------------------------------
 
 
-const authenticate = async (req,res,next) => {
+const authentication = async (req,res,next) => {
    try {
-    const checkToken = req.headers["x-api-key"]
-    
-        if(!checkToken)
-         return res.status(400).send({status:false, msg:"token must be present inside the header"})
 
-    jwt.verify(checkToken, "blogging-site", function (err, decodedToken){
+    // requirements 
+        if(!req.headers["x-api-key"])
+         return res.status(400).send({status:false, message:"token must be present inside the header"})
+
+
+// authentication 
+    jwt.verify(req.headers["x-api-key"], "blogging-site", function (err, decodedToken){
 if(err){
     return res.status(401).send({status:false, message:err.message})
     }
@@ -23,7 +25,7 @@ if(err){
 })}
 
 catch(err){
-    res.status(500).send({status:false, Error: err.message})}}
+    res.status(500).send({status:false, message: err.message})}}
 
 
 //------------------------------------------  Authorisation -----------------------------------------------------------------------------
@@ -31,29 +33,27 @@ catch(err){
 
 const authorisation = async (req,res,next) => {
      try{
- let  blogId = req.params.blogId
- if(!blogId){
-    res.status(400).send({status:false, msg:"blogId is important in path parameters"})
+        // requirements
+ if(!req.params.blogId){
+    res.status(400).send({status:false, message:"blogId should be present in path parameters"})
  }
-  if(!isValidObjectId(blogId)){
+
+ // validation of ObjectId
+  if(!isValidObjectId(req.params.blogId)){
  res.status(400).send({status: false, msg:"please use valid ObjectId!!"})}
  
-  let details= await blogModel.findById({_id:blogId})
-  id= details.authorId
-  
-   let verifyToken= req.identity
-   
-    if(verifyToken == id)
+  let findBlogById= await blogModel.findById({_id:req.params.blogId})
+
+  // authorization 
+  if(req.identity==findBlogById.authorId)
      next()
 
 else{
-    res.status(403).send({status: false,msg:"You are unauthorized to do this!!!"})}}
+    res.status(403).send({status: false,message:"You are unauthorized to do this!!!"})}}
 
  catch(err){
-         res.status(500).send({status:false, Error:err.message})}}
+         res.status(500).send({status:false, message:err.message})}}
 
 
-        
- 
-module.exports.authenticate = authenticate
+module.exports.authentication = authentication
 module.exports.authorisation = authorisation
