@@ -25,7 +25,7 @@ if(err){
 })}
 
 catch(err){
-    res.status(500).send({status:false, message: err.message})}}
+   return res.status(500)}}
 
 
 //------------------------------------------  Authorisation -----------------------------------------------------------------------------
@@ -35,24 +35,29 @@ const authorisation = async (req,res,next) => {
      try{
         // requirements
  if(!req.params.blogId){
-    res.status(400).send({status:false, message:"blogId should be present in path parameters"})
+    return res.status(400).send({status:false, message:"blogId should be present in path parameters"})
  }
 
  // validation of ObjectId
   if(!isValidObjectId(req.params.blogId)){
- res.status(400).send({status: false, msg:"please use valid ObjectId!!"})}
+ return res.status(400).send({status: false, messageg:"please use valid ObjectId!!"})}
  
   let findBlogById= await blogModel.findById({_id:req.params.blogId})
+
+  if(!findBlogById){
+    return res.status(404).send({status:false, message:"No blog is present with this blogId"})
+  }
+  if(findBlogById.isDeleted===true||findBlogById.isPublished===false){
+    return res.status(404).send({status:false, message:"this blog is already deleted or not published."})
+  }
 
   // authorization 
   if(req.identity==findBlogById.authorId)
      next()
 
-else{
-    res.status(403).send({status: false,message:"You are unauthorized to do this!!!"})}}
+else{return res.sendStatus(403)}}
 
- catch(err){
-         res.status(500).send({status:false, message:err.message})}}
+ catch(err){ return res.sendStatus(500)}}
 
 
 module.exports.authentication = authentication

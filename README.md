@@ -118,4 +118,28 @@ Successful Login Response structure
   }
 }
 Refer https://jsonplaceholder.typicode.com/guide/ for some fake blogs data.
+
+
+
+
+
+https://stackoverflow.com/questions/34235875/should-jwt-web-token-be-encrypted
+https://stackoverflow.com/questions/60538047/jwt-private-public-key-confusion
+https://stackoverflow.com/questions/27301557/if-you-can-decode-jwt-how-are-they-secure
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 Note: Create a group database and use the same database in connection string by replacing `groupXDatabase
