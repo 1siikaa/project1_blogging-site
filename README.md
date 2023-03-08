@@ -4,7 +4,7 @@ Lithium
                            # Blogging Site Mini Project Requirement #
 
 # Phase I--------------------------------------------------------------------------------------------------------------------------------------------
-
+```yaml
 --------------------------------------------------- Author Model --------------------------------------------------------------------
 { 
     fname: { mandatory},
@@ -14,8 +14,9 @@ Lithium
     email: {mandatory, valid email, unique},
     password: {mandatory}
 }
-
+```
 --------------------------------------------------- Blogs Model ------------------------------------------------------------------------
+```yaml
 { 
     title: {mandatory},
     body: {mandatory},
@@ -26,7 +27,7 @@ Lithium
     createdAt, updatedAt, deletedAt: {when the document is deleted}, isDeleted: {boolean, default: false},
     publishedAt: {when the blog is published}, isPublished: {boolean, default: false}
 }
-
+```
 ................................................. Author APIs /authors ...................................................................
 
 Create an author - atleast 5 authors
